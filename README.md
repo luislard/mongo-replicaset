@@ -34,6 +34,10 @@ $ docker exec mongoNode1 bash -c 'mkdir /data/keyfile /data/admin'
 
 The next step is to create some admin users, let’s create a **admin.js** and a **replica.js** file that looks like this:
 
+This file creates 2 users on db admin:
+* One user with userAdminAnyDatabase Role.
+* One user with clusterAdmin Role.
+
 ```javascript
 // admin.js
 admin = db.getSiblingDB("admin")
@@ -68,3 +72,19 @@ rs.initiate({
 ```
 
 > Passwords should be random, long, and complex to ensure system security and to prevent or delay malicious access. See Database User Roles for a full list of [built-in roles](https://docs.mongodb.com/manual/reference/built-in-roles/#database-user-roles) and related to database administration operations.
+
+
+What we have done until know:
+
+* created the **mongo_storage**, docker volume.
+* created the **mongo-keyfile**, openssl key generation.
+* created the **admin.js file**, admin users for mongoDB.
+* created the **replica.js file**, to init the replica set.
+
+Ok let’s continue with passing the files to the container.
+
+```bash
+$ docker cp admin.js mongoNode1:/data/admin/
+$ docker cp replica.js mongoNode1:/data/admin/
+$ docker cp mongo-keyfile mongoNode1:/data/keyfile/
+```
