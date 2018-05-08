@@ -17,8 +17,8 @@ $ docker run --name mongoNode1 \
     --smallfiles
 ```
 
-> Note:
-> --smallfiles 
+**Note:**
+> **--smallfiles** 
 > Sets MongoDB to use a smaller default file size. The --smallfiles option reduces the initial size for data files and > limits the maximum size to 512 megabytes. --smallfiles also reduces the size of each journal file from 1 gigabyte to > 128 megabytes. Use --smallfiles if you have a large number of databases that each holds a small quantity of data.
 > 
 > The --smallfiles option can lead the mongod instance to create a large number of files, which can affect performance > for larger databases.
