@@ -17,6 +17,14 @@ $ docker run --name mongoNode1 \
     --smallfiles
 ```
 
+> Note:
+> --smallfiles 
+> Sets MongoDB to use a smaller default file size. The --smallfiles option reduces the initial size for data files and > limits the maximum size to 512 megabytes. --smallfiles also reduces the size of each journal file from 1 gigabyte to > 128 megabytes. Use --smallfiles if you have a large number of databases that each holds a small quantity of data.
+> 
+> The --smallfiles option can lead the mongod instance to create a large number of files, which can affect performance > for larger databases.
+
+
+
 Next we need to create the **key file**.
 
 > The contents of the keyfile serves as the shared password for the members of the replica set. The content of the keyfile must be the same for all members of the replica set.
@@ -87,4 +95,44 @@ Ok let’s continue with passing the files to the container.
 $ docker cp admin.js mongoNode1:/data/admin/
 $ docker cp replica.js mongoNode1:/data/admin/
 $ docker cp mongo-keyfile mongoNode1:/data/keyfile/
+```
+
+```bash
+// change folder owner to the user container
+$ docker exec mongoNode1 bash -c 'chown -R mongodb:mongodb /data'
+```
+
+What we have done is that we pass the files needed to the container, and then **change the /data folder owner to the container user**, since the the container user is the user that will need access to this folder and files.
+
+Now everything has been set, and we are ready to restart the mongod instance with the replica set configurations.
+
+Before we start the authenticated mongo container let’s create an env file to set our users and passwords.
+
+```bash
+# .env file
+MONGO_USER_ADMIN=cristian
+MONGO_PASS_ADMIN=cristianPassword2017
+
+MONGO_REPLICA_ADMIN=replicaAdmin
+MONGO_PASS_REPLICA=replicaAdminPassword2017
+```
+
+Now we need to remove the container and start a new one. Why ?, because we need to provide the replica set and authentication parameters, and to do that we need to run the following command:
+
+```bash
+# first let's remove our container
+$ docker rm -f mongoNode1
+// now lets start our container with authentication 
+$ docker run --name mongoNode1 --hostname mongoNode1 \
+-v mongo_storage:/data \
+--env-file env \
+--add-host manager1:192.168.99.100 \
+--add-host worker1:192.168.99.101 \
+--add-host worker2:192.168.99.102 \
+-p 27017:27017 \
+-d mongo --smallfiles \
+--keyFile /data/keyfile/mongo-keyfile \
+--replSet 'rs1' \
+--storageEngine wiredTiger \
+--port 27017
 ```
